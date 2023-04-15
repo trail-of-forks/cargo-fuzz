@@ -10,9 +10,10 @@ use clap::Parser;
 
 #[macro_use]
 mod templates;
-mod options;
-mod project;
 mod utils;
+
+pub mod options;
+pub mod project;
 
 static FUZZ_TARGETS_DIR_OLD: &str = "fuzzers";
 static FUZZ_TARGETS_DIR: &str = "fuzz_targets";
@@ -83,7 +84,7 @@ https://doc.rust-lang.org/unstable-book/compiler-flags/sanitizer.html\
 ";
 
 /// A trait for running our various commands.
-trait RunCommand {
+pub trait RunCommand {
     /// Run this command!
     fn run_command(&mut self) -> Result<()>;
 }
@@ -101,7 +102,7 @@ trait RunCommand {
         .required(false)
         .hide(true))
 )]
-enum Command {
+pub enum Command {
     /// Initialize the fuzz directory
     Init(options::Init),
 
@@ -159,8 +160,4 @@ impl RunCommand for Command {
             Command::Coverage(x) => x.run_command(),
         }
     }
-}
-
-fn main() -> Result<()> {
-    Command::parse().run_command()
 }

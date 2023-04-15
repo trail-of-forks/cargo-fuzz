@@ -178,6 +178,12 @@ impl stdfmt::Display for BuildOptions {
     }
 }
 
+impl BuildOptions {
+    pub(crate) fn requires_nightly(&self) -> bool {
+        !self.unstable_flags.is_empty() || self.sanitizer != Sanitizer::None || self.coverage
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Parser)]
 pub struct FuzzDirWrapper {
     /// The path to the fuzz project directory.
@@ -195,29 +201,33 @@ impl stdfmt::Display for FuzzDirWrapper {
     }
 }
 
+pub fn default_opts() -> BuildOptions {
+    BuildOptions {
+        dev: false,
+        release: false,
+        debug_assertions: false,
+        verbose: false,
+        no_default_features: false,
+        all_features: false,
+        features: None,
+        sanitizer: Sanitizer::Address,
+        triple: String::from(crate::utils::default_target()),
+        unstable_flags: Vec::new(),
+        target_dir: None,
+        coverage: false,
+        strip_dead_code: false,
+        no_cfg_fuzzing: false,
+        no_trace_compares: false,
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
 
     #[test]
     fn display_build_options() {
-        let default_opts = BuildOptions {
-            dev: false,
-            release: false,
-            debug_assertions: false,
-            verbose: false,
-            no_default_features: false,
-            all_features: false,
-            features: None,
-            sanitizer: Sanitizer::Address,
-            triple: String::from(crate::utils::default_target()),
-            unstable_flags: Vec::new(),
-            target_dir: None,
-            coverage: false,
-            strip_dead_code: false,
-            no_cfg_fuzzing: false,
-            no_trace_compares: false,
-        };
+        let default_opts = default_opts();
 
         let opts = vec![
             default_opts.clone(),

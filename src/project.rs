@@ -32,6 +32,7 @@ impl FuzzProject {
     pub fn new(fuzz_dir_opt: Option<PathBuf>) -> Result<Self> {
         let mut project = Self::manage_initial_instance(fuzz_dir_opt)?;
         let manifest = project.manifest()?;
+        #[cfg(not(feature = "no-manifest-check"))]
         if !is_fuzz_manifest(&manifest) {
             bail!(
                 "manifest `{}` does not look like a cargo-fuzz manifest. \
@@ -129,8 +130,11 @@ impl FuzzProject {
         Ok(cargo.write_fmt(toml_bin_template!(target))?)
     }
 
-    fn cargo(&self, subcommand: &str, build: &BuildOptions) -> Result<Command> {
+    pub fn cargo(&self, subcommand: &str, build: &BuildOptions) -> Result<Command> {
         let mut cmd = Command::new("cargo");
+        if build.requires_nightly() {
+            cmd.arg("+nightly");
+        }
         cmd.arg(subcommand)
             .arg("--manifest-path")
             .arg(self.manifest_path())
